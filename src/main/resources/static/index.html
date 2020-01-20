@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas Backupper</title>
+<link href="css/bootstrap.min.css" rel="stylesheet" />
+<link href="css/font-awesome.min.css" rel="stylesheet">
+
+<link href="css/master.css" rel="stylesheet" />
+
+</head>
+<body>
+
+	<div class="container-fluid content" ng-app="atlasApp">
+		<div ng-controller="atlasCtrl">
+			<div class="row">
+				<div class="col-md-2 text-center">
+					<img alt="" src="img/AtlasLogo.png" width="200px"> <span
+						style="font-size: 18px;">{{todayDate}}<br>{{clock}}<br>Next	Update: {{timer}} 
+						<br>
+						<button class="btn btn-primary btn-xs" ng-click="runBackup()">BackUp Now</button>
+						<br>
+						<button class="btn btn-primary btn-xs" ng-click="showConfigBt()" ng-hide="showConfig">Show Config</button>
+						<br>
+						
+						<div ng-hide="showLoader" style="padding-top: 20px;">
+							<i class="fa fa-circle-o-notch fa-spin" style="font-size: 20px;" aria-hidden="true"></i> Updating...
+						</div>
+						
+					</span>
+				</div>
+				<div class="col-md-10 text-center">
+					
+				
+					<div class="row" style="padding-top: 20px;">
+						<div class="col-md-6">
+							<div>
+								<h2>
+									<i class="fa fa-calendar" aria-hidden="true"></i>
+									BackUp Atlas Admin
+								</h2>
+							</div>
+							<table class="table table-hover" style="font-size: 12px;border:none;">
+								<thead>
+									<tr>
+										<th style="text-align: center;">Backup Date</th>
+										<th style="text-align: center;">Backup Path</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr ng-repeat="backup in lsBackups">
+										<td>{{getDate(backup)}}</td>
+										<td>{{backup.name}}</td>
+									</tr>
+								</tbody>
+								<tfoot>
+									<tr>
+										<td colspan="2" style="font-weight: bold; font-size: 18px;"><span
+											class="fa fa-database"></span> Total Backups:
+											{{lsBackups.length}}</td>
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+						
+						<div class="col-md-6 text-left" ng-show="showConfig">
+							<div>
+								<h2>
+									<i class="fa fa-cogs" aria-hidden="true"></i>
+									Configuration data
+								</h2>
+							</div>
+							 <ul class="list-group config" >
+							    <li class="list-group-item">
+							    	<span class="label label-primary">Atlas Save Directory Path:</span><span class="config-content">{{config.atlasPath}}</span>
+							    </li>
+							    <li class="list-group-item">
+							    	<span  class="label label-primary">Backup Save Directory Path:</span><span class="config-content">{{config.backupPath}}</span>
+							    </li>
+							    <li class="list-group-item">
+							    	<span  class="label label-primary">Cron Backup:</span><span class="config-content">{{config.cronBackup}}</span>
+							    </li>
+							    <li class="list-group-item">
+							    	<span class="label label-primary">Cron Clean Old Backups:</span><span class="config-content">{{config.cronClean}}</span>
+							    </li>
+							    <li class="list-group-item">
+							    	<span  class="label label-primary">Max Backups Keep:</span><span class="config-content">{{config.maxBackups}}</span>
+							    </li>
+							     <li class="list-group-item">
+							    	<button class="btn btn-success btn-xs" ng-click="showConfigBt()" ng-show="showConfig">Hide Config</button>
+							    </li>
+							  </ul>
+																					
+						</div>
+
+					</div>
+					
+
+				</div>
+			</div>
+
+
+			
+
+		</div>
+
+	</div>
+
+	<script type="text/javascript" src="jslib/jquery.min.js"></script>
+	<script type="text/javascript" src="jslib/angular.min.js"></script>
+	<script type="text/javascript" src="jslib/bootstrap.min.js"></script>
+	<script type="text/javascript" src="jslib/moment.min.js"></script>
+	<script type="text/javascript" src="jslib/moment-with-locales.min.js"></script>
+
+	<script type="text/javascript" src="app/app.js"></script>
+
+</body>
+</html>
