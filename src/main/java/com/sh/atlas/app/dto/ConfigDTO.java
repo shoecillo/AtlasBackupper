@@ -12,6 +12,8 @@ public class ConfigDTO {
 	private String cronBackup;
 	
 	private String cronClean;
+	
+	private Boolean enableSchedule;
 
 	public String getAtlasPath() {
 		return atlasPath;
@@ -52,6 +54,16 @@ public class ConfigDTO {
 	public void setCronClean(String cronClean) {
 		this.cronClean = cronClean;
 	}
+
+	public Boolean getEnableSchedule() {
+		return enableSchedule;
+	}
+
+	public void setEnableSchedule(Boolean enableSchedule) {
+		this.enableSchedule = enableSchedule;
+	}
+
+	
 	
 	
 	

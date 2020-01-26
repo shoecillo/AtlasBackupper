@@ -24,6 +24,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -51,47 +52,53 @@ public class Backupper {
 	@Value("${clean.delay}")
 	private String cronClean;
 	
+	@Autowired
+	private Boolean enabledScheduling;
+	
 	private final static String REGEX_FOLDER = "[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}_[0-9]{2}-[0-9]{10,}$";
 
 	
 	@Scheduled(cron="${backup.delay}")
-	public void runBackup() {
-		
-		try {
-			backup();
-		} catch (IOException e) {
-			LOGGER.error("Error:",e);
+	private void runBackup() {
+		if(enabledScheduling) {
+			try {
+				backup(false);
+			} catch (IOException e) {
+				LOGGER.error("Error:",e);
+			}
 		}
-		
 	}
 	
 	@Scheduled(cron="${clean.delay}")
-	public void clean() {
-		List<Path> ls = listBackups();
-		if(ls.size()>maxBackups) {
-			ls.sort(new Comparator<Path>() {
-				@Override
-				public int compare(Path o1, Path o2) {
-					
-					return o1.compareTo(o2);
-				}
-			});
-			
-			List<Path> subLs = ls.subList(0, ls.size()-maxBackups);
-			
-			subLs.stream().forEach(it->{
-				try {
-					deleteFolder(it);
-				} catch (IOException e) {
-					LOGGER.error("Error: ",e);
-				}
-			});
-
+	private void clean() {
+		
+		if(enabledScheduling) {
+			List<Path> ls = listBackups();
+			if(ls.size()>maxBackups) {
+				ls.sort(new Comparator<Path>() {
+					@Override
+					public int compare(Path o1, Path o2) {
+						
+						return o1.compareTo(o2);
+					}
+				});
+				
+				List<Path> subLs = ls.subList(0, ls.size()-maxBackups);
+				
+				subLs.stream().forEach(it->{
+					try {
+						deleteFolder(it);
+					} catch (IOException e) {
+						LOGGER.error("Error: ",e);
+					}
+				});
+	
+			}
 		}
 	}
 	
 	
-	private void backup() throws IOException {
+	public boolean backup(Boolean isManual) throws IOException {
 		
 		Path atlas = Paths.get(atlasPath);
 		DateTime dt = new DateTime();
@@ -101,7 +108,13 @@ public class Backupper {
 		LOGGER.debug(folderName);
 		if(checkBackup(folderName)) {
 			
-			String newDir = backupPath.concat("\\").concat(folderName).concat("\\SavedAtlasLocal");
+			String newDir = "";
+			if(isManual) {
+				newDir = backupPath.concat("\\MANUAL\\").concat(folderName).concat("\\SavedAtlasLocal");
+			}else {
+				newDir = backupPath.concat("\\").concat(folderName).concat("\\SavedAtlasLocal");
+			}
+			
 			Path newDirPath = Paths.get(newDir);
 			Files.createDirectories(newDirPath);
 
@@ -119,6 +132,9 @@ public class Backupper {
 				}
 				
 			});
+			return true;
+		} else {
+			return false;
 		}
 	}
 		
@@ -193,6 +209,23 @@ public class Backupper {
 				.collect(Collectors.toList());
 	}
 	
+	public List<Path> listBackupsManual() {
+		
+		Path backUpFolder = Paths.get(backupPath.concat("\\MANUAL\\"));
+		File[] dirs = backUpFolder.toFile().listFiles(new FileFilter() {
+			
+			@Override
+			public boolean accept(File pathname) {
+				Pattern pat = Pattern.compile(REGEX_FOLDER);
+				return pathname.isDirectory() && pat.matcher(pathname.getName()).matches();
+				
+			}
+		});
+		return Arrays.stream(dirs)
+				.map(it->Paths.get(it.getAbsolutePath()))
+				.collect(Collectors.toList());
+	}
+	
 	private void deleteFolder(Path dir) throws IOException{
 		
 		Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
@@ -219,7 +252,16 @@ public class Backupper {
 		dto.setCronBackup(cronBackup);
 		dto.setCronClean(cronClean);
 		dto.setMaxBackups(maxBackups);
+		dto.setEnableSchedule(enabledScheduling);
 		return dto;
+	}
+	
+	public void enableSchedule(Boolean enable) {
+		enabledScheduling = enable;
+	}
+	
+	public Boolean isEnabled() {
+		return enabledScheduling;
 	}
 	
 }
