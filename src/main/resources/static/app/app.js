@@ -13,12 +13,29 @@ arkApp.controller("atlasCtrl",["$scope","$http","$interval","$sce",function($sco
 	vm.timer="";
 	vm.showLoader = false;
 	vm.showConfig = false;
+	vm.error="";
+	vm.isManual = false;
 	
 	vm.getBackups = function()
 	{
 		$http.get('/list').then(function(result)
 		{
 			vm.lsBackups = result.data;
+			vm.isManual = false;
+		}, 
+		function(error)
+		{
+			console.log("ERROR");
+		
+		});
+	};
+	
+	vm.getBackupsManual = function()
+	{
+		$http.get('/listManual').then(function(result)
+		{
+			vm.lsBackups = result.data;
+			vm.isManual = true;
 		}, 
 		function(error)
 		{
@@ -31,11 +48,13 @@ arkApp.controller("atlasCtrl",["$scope","$http","$interval","$sce",function($sco
 	{
 		$http.get('/runBackup').then(function()
 		{
-			vm.getBackups();
+			vm.getBackupsManual();
+			vm.isManual = true;
 		}, 
 		function(error)
 		{
-			console.log("ERROR");
+			console.log(error);
+			vm.error = error.data.message;
 		
 		});
 	};
@@ -54,6 +73,17 @@ arkApp.controller("atlasCtrl",["$scope","$http","$interval","$sce",function($sco
 		{
 			console.log("ERROR");
 		
+		});
+	};
+	
+	vm.enableScheduled = function(){
+		vm.config.enableSchedule = !vm.config.enableSchedule;
+		var url = "/enableSchedule?enable="+vm.config.enableSchedule;
+		$http.get(url).then(function(result){
+			
+		}, 
+		function(error){
+			console.log("ERROR");
 		});
 	};
 	
