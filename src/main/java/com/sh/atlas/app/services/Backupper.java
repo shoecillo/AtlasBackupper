@@ -119,15 +119,31 @@ public class Backupper {
 			Files.createDirectories(newDirPath);
 
 			Files.walkFileTree(atlas, new SimpleFileVisitor<Path>() {
+				
+				
+				
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					
+					if(!dir.equals(atlas)) {
+						
+						Path subDir = newDirPath.resolve(atlas.relativize(dir));
+						Files.createDirectories(subDir);
+					} 
+
+					return FileVisitResult.CONTINUE;
+				}
 					
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						
 					LOGGER.debug(file.toString());
-					String destPath = newDirPath.toString().concat("\\").concat(file.getFileName().toString());
+					
+					String destPath = newDirPath.toString().concat("\\").concat(atlas.relativize(file).toString());
 					LOGGER.debug(destPath);
 					Path dest = Paths.get(destPath);
 					Files.copy(file, dest, StandardCopyOption.COPY_ATTRIBUTES);
+					
 					return FileVisitResult.CONTINUE;
 				}
 				
